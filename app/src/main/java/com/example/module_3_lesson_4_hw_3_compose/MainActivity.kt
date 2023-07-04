@@ -1,11 +1,13 @@
 package com.example.module_3_lesson_4_hw_3_compose
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +15,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,6 +44,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -72,7 +78,9 @@ fun MyApp() {
         contentDescription = "Image background",
         contentScale = ContentScale.FillBounds,
         modifier = Modifier
-            .graphicsLayer { alpha = 0.9f }
+            .clickable { focusManager.clearFocus() }
+//            .graphicsLayer { alpha = 0.9f }
+
     )
 
     Box(
@@ -105,30 +113,46 @@ fun MyApp() {
                 value = countryTextField,
                 onValueChange = { countryTextField = it },
                 label = { Text("Country") },
-                textStyle = TextStyle(color = Purple40)
+                textStyle = TextStyle(color = Color.White),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        focusManager.clearFocus()
+                    }
+                ),
             )
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_small)))
             OutlinedTextField(
                 value = languageTextField,
                 onValueChange = { languageTextField = it },
                 label = { Text("Language") },
-                textStyle = TextStyle(color = Color.White)
+                textStyle = TextStyle(color = Color.White),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        focusManager.clearFocus()
+                    }
+                ),
             )
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_medium)))
-            OutlinedButton(
+            Button(
                 onClick = {
-
+                    Log.d("MYLOG", "Country: $countryTextField, Language: $languageTextField")
                 },
-                colors = ButtonDefaults.outlinedButtonColors(
+                colors = ButtonDefaults.buttonColors(
                     containerColor = Purple40,
                     contentColor = Color.White,
-                ),
-                border = BorderStroke(0.dp, Color.Transparent)
+                )
             ) {
                 Text(text = stringResource(id = R.string.button_search))
             }
         }
-
 
 
     }
