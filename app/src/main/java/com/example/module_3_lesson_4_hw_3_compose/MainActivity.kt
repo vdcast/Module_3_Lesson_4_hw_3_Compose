@@ -4,38 +4,29 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.dimensionResource
@@ -46,42 +37,88 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.module_3_lesson_4_hw_3_compose.ui.theme.Module_3_Lesson_4_hw_3_ComposeTheme
 import com.example.module_3_lesson_4_hw_3_compose.ui.theme.Purple40
+import com.example.module_3_lesson_4_hw_3_compose.ui.theme.ResponseMain
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        var retrofit = RetrofitClient.getClient("https://api.github.com/")
+            .create(API::class.java)
+
+
+
         setContent {
             Module_3_Lesson_4_hw_3_ComposeTheme {
-                MyApp()
+                MyApp(retrofit)
+//                ScreenMain(
+//                    retrofit,
+//                    onSearchClicked = {
+//                        Log.d("MYLOG", "CLICKED BRO :D")
+//                    }
+//                )
             }
+        }
+    }
+}
+
+
+@Composable
+fun MyApp(
+    retrofit: API
+) {
+    val navController = rememberNavController()
+    Image(
+        painter = painterResource(id = R.drawable.github_cellphone),
+        contentDescription = "Image background",
+        contentScale = ContentScale.FillBounds,
+        modifier = Modifier
+            .fillMaxSize()
+//            .graphicsLayer { alpha = 0.9f }
+
+    )
+
+    NavHost(
+        navController = navController,
+        startDestination = ScreenRoutes.ScreenMain.route
+    ) {
+        composable(ScreenRoutes.ScreenMain.route) {
+            ScreenMain(
+                retrofit = retrofit,
+                onSearchClicked = {
+                    navController.navigate(ScreenRoutes.ScreenListOfUsers.route)
+                }
+            )
+        }
+        composable(ScreenRoutes.ScreenListOfUsers.route) {
+            ScreenListOfUsers()
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyApp() {
+fun ScreenMain(
+    retrofit: API,
+    onSearchClicked: () -> Unit,
+) {
     var countryTextField by remember { mutableStateOf("") }
     var languageTextField by remember { mutableStateOf("") }
-    val coroutineScope = rememberCoroutineScope()
+    var searchText by remember { mutableStateOf("kek") }
 
     val focusManager = LocalFocusManager.current
 
-    Image(
-        painter = painterResource(id = R.drawable.github_cellphone),
-        contentDescription = "Image background",
-        contentScale = ContentScale.FillBounds,
-        modifier = Modifier
-            .clickable { focusManager.clearFocus() }
-//            .graphicsLayer { alpha = 0.9f }
 
-    )
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -101,6 +138,12 @@ fun MyApp() {
                     end = dimensionResource(id = R.dimen.padding_large)
                 )
                 .align(Alignment.TopCenter)
+        )
+
+        Text(
+            text = searchText,
+            color = Color.White,
+            modifier = Modifier.align(Alignment.Center)
         )
 
         Column(
@@ -143,12 +186,43 @@ fun MyApp() {
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_medium)))
             Button(
                 onClick = {
+                    onSearchClicked()
                     Log.d("MYLOG", "Country: $countryTextField, Language: $languageTextField")
+//                    retrofit.getItemsOfUsers().enqueue(object : Callback<ResponseMain> {
+//                        override fun onResponse(
+//                            call: Call<ResponseMain>,
+//                            response: Response<ResponseMain>
+//                        ) {
+//                            val result = response.body()?.total_count.toString()
+//                            Log.d("MYLOG", "Found users from GitHub: $result")
+//                        }
+//
+//                        override fun onFailure(call: Call<ResponseMain>, t: Throwable) {
+//                            Log.d("MYLOG", "Some error in query. 1")
+//                        }
+//
+//                    })
+                    retrofit.getItemsOfUsers().enqueue(object : Callback<ResponseMain> {
+                        override fun onResponse(
+                            call: Call<ResponseMain>,
+                            response: Response<ResponseMain>
+                        ) {
+                            val result = response.body()?.items
+                            Log.d("MYLOG", "Found some: $result")
+                        }
+
+                        override fun onFailure(call: Call<ResponseMain>, t: Throwable) {
+                            Log.d("MYLOG", "Some error in query. 2")
+                        }
+
+
+                    })
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Purple40,
                     contentColor = Color.White,
-                )
+                ),
+                modifier = Modifier.width(dimensionResource(id = R.dimen.button_width))
             ) {
                 Text(text = stringResource(id = R.string.button_search))
             }
@@ -158,3 +232,7 @@ fun MyApp() {
     }
 }
 
+@Composable
+fun ScreenListOfUsers() {
+    Text(text = "SEARCH", color = Color.White)
+}
