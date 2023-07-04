@@ -7,7 +7,7 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface API {
-    @GET("search/users?q=location:ukraine+language:java")
+    @GET("search/users?q=location:ukraine+language:kotlin")
     fun getItemsOfUsers(): Call<ResponseMain>
 
     @GET("search/users")

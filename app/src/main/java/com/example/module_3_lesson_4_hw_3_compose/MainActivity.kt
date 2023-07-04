@@ -124,7 +124,6 @@ fun ScreenMain(
 ) {
     var countryTextField by remember { mutableStateOf("") }
     var languageTextField by remember { mutableStateOf("") }
-    var searchText by remember { mutableStateOf("kek") }
 
     val focusManager = LocalFocusManager.current
 
@@ -150,11 +149,6 @@ fun ScreenMain(
                 .align(Alignment.TopCenter)
         )
 
-        Text(
-            text = searchText,
-            color = Color.White,
-            modifier = Modifier.align(Alignment.Center)
-        )
 
         Column(
             modifier = Modifier
@@ -198,33 +192,27 @@ fun ScreenMain(
                 onClick = {
                     onSearchClicked("SEARCH TEXT HAHAHA")
                     Log.d("MYLOG", "Country: $countryTextField, Language: $languageTextField")
-//                    retrofit.getItemsOfUsers().enqueue(object : Callback<ResponseMain> {
-//                        override fun onResponse(
-//                            call: Call<ResponseMain>,
-//                            response: Response<ResponseMain>
-//                        ) {
-//                            val result = response.body()?.total_count.toString()
-//                            Log.d("MYLOG", "Found users from GitHub: $result")
-//                        }
-//
-//                        override fun onFailure(call: Call<ResponseMain>, t: Throwable) {
-//                            Log.d("MYLOG", "Some error in query. 1")
-//                        }
-//
-//                    })
                     retrofit.getItemsOfUsers().enqueue(object : Callback<ResponseMain> {
                         override fun onResponse(
                             call: Call<ResponseMain>,
                             response: Response<ResponseMain>
                         ) {
-                            val result = response.body()?.items
-                            Log.d("MYLOG", "Found some: $result")
+                            val numberOfUsers = response.body()?.total_count.toString()
+                            val itemsFromGithub = response.body()?.items
+                            val itemsArray = itemsFromGithub?.toTypedArray()
+                            val firstItem = itemsArray?.get(0)?.id
+                            val secondItem = itemsArray?.get(1)?.id
+                            val thirdItem = itemsArray?.get(2)?.id
+                            Log.d("MYLOG", "Number of users: $numberOfUsers")
+                            Log.d("MYLOG", "Items: $itemsFromGithub")
+                            Log.d("MYLOG", "Items: $firstItem")
+                            Log.d("MYLOG", "Items: $secondItem")
+                            Log.d("MYLOG", "Items: $thirdItem")
                         }
 
                         override fun onFailure(call: Call<ResponseMain>, t: Throwable) {
-                            Log.d("MYLOG", "Some error in query. 2")
+                            Log.d("MYLOG", "Some error in query. 1")
                         }
-
 
                     })
                 },
