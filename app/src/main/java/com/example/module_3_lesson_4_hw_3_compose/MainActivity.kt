@@ -12,6 +12,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -49,6 +52,7 @@ import com.example.module_3_lesson_4_hw_3_compose.ui.theme.ResponseMain
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.lang.StringBuilder
 
 
 class MainActivity : ComponentActivity() {
@@ -192,22 +196,34 @@ fun ScreenMain(
                 onClick = {
                     onSearchClicked("SEARCH TEXT HAHAHA")
                     Log.d("MYLOG", "Country: $countryTextField, Language: $languageTextField")
-                    retrofit.getItemsOfUsers().enqueue(object : Callback<ResponseMain> {
+
+                    val country = countryTextField
+                    val language = languageTextField
+
+                    val query = "location:$country language:$language"
+
+                    Log.d("MYLOG", query)
+                    retrofit.search(query).enqueue(object : Callback<ResponseMain> {
                         override fun onResponse(
                             call: Call<ResponseMain>,
                             response: Response<ResponseMain>
                         ) {
-                            val numberOfUsers = response.body()?.total_count.toString()
-                            val itemsFromGithub = response.body()?.items
-                            val itemsArray = itemsFromGithub?.toTypedArray()
-                            val firstItem = itemsArray?.get(0)?.id
-                            val secondItem = itemsArray?.get(1)?.id
-                            val thirdItem = itemsArray?.get(2)?.id
-                            Log.d("MYLOG", "Number of users: $numberOfUsers")
-                            Log.d("MYLOG", "Items: $itemsFromGithub")
-                            Log.d("MYLOG", "Items: $firstItem")
-                            Log.d("MYLOG", "Items: $secondItem")
-                            Log.d("MYLOG", "Items: $thirdItem")
+                            if (response.isSuccessful) {
+                                val itemsFromGithub = response.body()?.items
+                                val idsList = itemsFromGithub?.map { it.id.toString() } ?: emptyList()
+                                val idsArray = idsList.toTypedArray()
+
+                                val totalCount = response.body()?.total_count.toString()
+
+                                if (idsArray.isNotEmpty()) {
+                                    Log.d("MYLOG", "${idsArray[0]}, ${idsArray[1]}, ${idsArray[idsArray.size - 1]}")
+                                    Log.d("MYLOG", "${idsArray.size}")
+                                    Log.d("MYLOG", "Total count: $totalCount")
+                                }
+                            } else {
+                                Log.d("MYLOG", "Response not successful. Code: ${response.code()}, Message: ${response.message()}")
+                            }
+
                         }
 
                         override fun onFailure(call: Call<ResponseMain>, t: Throwable) {
@@ -215,6 +231,7 @@ fun ScreenMain(
                         }
 
                     })
+
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Purple40,
@@ -224,6 +241,76 @@ fun ScreenMain(
             ) {
                 Text(text = stringResource(id = R.string.button_search))
             }
+            Button(
+                onClick = {
+                    val query = "location:ukraine+language:kotlin"
+                    retrofit.getItems().enqueue(object : Callback<ResponseMain> {
+                        override fun onResponse(
+                            call: Call<ResponseMain>,
+                            response: Response<ResponseMain>
+                        ) {
+                            if (response.isSuccessful) {
+                                val itemsFromGithub = response.body()?.items
+                                val idsList = itemsFromGithub?.map { it.id.toString() } ?: emptyList()
+                                val idsArray = idsList.toTypedArray()
+
+                                val totalCount = response.body()?.total_count.toString()
+
+                                if (idsArray.isNotEmpty()) {
+                                    Log.d("MYLOG", "2 | ${idsArray[0]}, ${idsArray[1]}, ${idsArray[idsArray.size - 1]}")
+                                    Log.d("MYLOG", "2 | ${idsArray.size}")
+                                    Log.d("MYLOG", "2 | Total count: $totalCount")
+                                }
+                            } else {
+                                Log.d("MYLOG", "Response not successful. Code: ${response.code()}, Message: ${response.message()}")
+                            }
+
+                        }
+
+                        override fun onFailure(call: Call<ResponseMain>, t: Throwable) {
+                            Log.d("MYLOG", "Some error in query. 1")
+                        }
+
+                    })
+                }
+            ) {
+                Text(text = "KEK")
+            }
+            Button(
+                onClick = {
+                    val query = "location:ukraine+language:kotlin"
+                    retrofit.test("location:ukraine language:kotlin").enqueue(object : Callback<ResponseMain> {
+                        override fun onResponse(
+                            call: Call<ResponseMain>,
+                            response: Response<ResponseMain>
+                        ) {
+                            if (response.isSuccessful) {
+                                val itemsFromGithub = response.body()?.items
+                                val idsList = itemsFromGithub?.map { it.id.toString() } ?: emptyList()
+                                val idsArray = idsList.toTypedArray()
+
+                                val totalCount = response.body()?.total_count.toString()
+
+                                if (idsArray.isNotEmpty()) {
+                                    Log.d("MYLOG", "2 | ${idsArray[0]}, ${idsArray[1]}, ${idsArray[idsArray.size - 1]}")
+                                    Log.d("MYLOG", "2 | ${idsArray.size}")
+                                    Log.d("MYLOG", "2 | Total count: $totalCount")
+                                }
+                            } else {
+                                Log.d("MYLOG", "Response not successful. Code: ${response.code()}, Message: ${response.message()}")
+                            }
+
+                        }
+
+                        override fun onFailure(call: Call<ResponseMain>, t: Throwable) {
+                            Log.d("MYLOG", "Some error in query. 1")
+                        }
+
+                    })
+                }
+            ) {
+                Text(text = "TEST")
+            }
         }
 
 
@@ -232,5 +319,26 @@ fun ScreenMain(
 
 @Composable
 fun ScreenListOfUsers(param: String) {
-    Text(text = param, color = Color.White)
+
+    val itemsKek = arrayOf("kek1", "kek2", "kek3")
+
+    Column() {
+        Text(text = param, color = Color.White)
+
+
+
+        LazyColumn() {
+            itemsIndexed(itemsKek) { index, item ->
+                Text(
+                    text = itemsKek[index],
+                    color = Color.White
+                )
+                Text(
+                    text = item,
+                    color = Color.White
+                )
+            }
+        }
+    }
+
 }
