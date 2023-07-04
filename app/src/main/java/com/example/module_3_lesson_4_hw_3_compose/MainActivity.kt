@@ -38,9 +38,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.module_3_lesson_4_hw_3_compose.ui.theme.Module_3_Lesson_4_hw_3_ComposeTheme
 import com.example.module_3_lesson_4_hw_3_compose.ui.theme.Purple40
 import com.example.module_3_lesson_4_hw_3_compose.ui.theme.ResponseMain
@@ -96,12 +98,20 @@ fun MyApp(
             ScreenMain(
                 retrofit = retrofit,
                 onSearchClicked = {
-                    navController.navigate(ScreenRoutes.ScreenListOfUsers.route)
+                    navController.navigate("${ScreenRoutes.ScreenListOfUsers.route}/$it")
                 }
             )
         }
-        composable(ScreenRoutes.ScreenListOfUsers.route) {
-            ScreenListOfUsers()
+        composable(
+            route = "${ScreenRoutes.ScreenListOfUsers.route}/{my_param}",
+            arguments = listOf(
+                navArgument("my_param") {
+                    type = NavType.StringType
+                }
+            )
+        ) {
+            val param = it.arguments?.getString("my_param") ?: ""
+            ScreenListOfUsers(param = param)
         }
     }
 }
@@ -110,7 +120,7 @@ fun MyApp(
 @Composable
 fun ScreenMain(
     retrofit: API,
-    onSearchClicked: () -> Unit,
+    onSearchClicked: (String) -> Unit,
 ) {
     var countryTextField by remember { mutableStateOf("") }
     var languageTextField by remember { mutableStateOf("") }
@@ -186,7 +196,7 @@ fun ScreenMain(
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_medium)))
             Button(
                 onClick = {
-                    onSearchClicked()
+                    onSearchClicked("SEARCH TEXT HAHAHA")
                     Log.d("MYLOG", "Country: $countryTextField, Language: $languageTextField")
 //                    retrofit.getItemsOfUsers().enqueue(object : Callback<ResponseMain> {
 //                        override fun onResponse(
@@ -233,6 +243,6 @@ fun ScreenMain(
 }
 
 @Composable
-fun ScreenListOfUsers() {
-    Text(text = "SEARCH", color = Color.White)
+fun ScreenListOfUsers(param: String) {
+    Text(text = param, color = Color.White)
 }
