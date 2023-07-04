@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">Module_3_Lesson_4_hw_3_Compose</string>
-    <string name="text_intro">Search for talents from GitHub.\n\nPut in country and programming language.</string>
-    <string name="button_search">SEARCH</string>
+    <string name="text_intro">Search for talents from GitHub.\nPut in country and programming language.</string>
+    <string name="button_search">Search</string>
 </resources>
