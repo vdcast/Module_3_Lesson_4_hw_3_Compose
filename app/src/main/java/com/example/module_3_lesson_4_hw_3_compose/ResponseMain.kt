@@ -1,4 +1,4 @@
-package com.example.module_3_lesson_4_hw_3_compose.ui.theme
+package com.example.module_3_lesson_4_hw_3_compose
 
 import com.google.gson.annotations.SerializedName
 
