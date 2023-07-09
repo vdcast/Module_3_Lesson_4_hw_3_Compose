@@ -4,20 +4,32 @@ import android.util.Log
 import android.view.Gravity
 import android.view.WindowId.FocusObserver
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -29,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -42,12 +55,20 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.example.module_3_lesson_4_hw_3_compose.R
+import com.example.module_3_lesson_4_hw_3_compose.ui.theme.Black10
+import com.example.module_3_lesson_4_hw_3_compose.ui.theme.Module_3_Lesson_4_hw_3_ComposeTheme
+import com.example.module_3_lesson_4_hw_3_compose.ui.theme.Pink40
+import com.example.module_3_lesson_4_hw_3_compose.ui.theme.Pink50
 import com.example.module_3_lesson_4_hw_3_compose.ui.theme.Purple40
 
 @Composable
@@ -80,7 +101,12 @@ fun MyApp(
         composable(
             route = ScreenRoutes.ScreenListOfUsers.route
         ) {
-            ScreenListOfUsers(appViewModel = appViewModel)
+            ScreenListOfUsers(
+                appViewModel = appViewModel,
+                onItemClicked = {
+
+                }
+            )
         }
     }
 }
@@ -102,7 +128,9 @@ fun ScreenMain(
     var test by remember { mutableStateOf("") }
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .clickable { focusManager.clearFocus() }
     ) {
         Text(
             text = stringResource(id = R.string.text_intro),
@@ -173,14 +201,14 @@ fun ScreenMain(
                             appViewModel.searchUsers(query)
                             onSearchClicked()
                         } else {
-                            Toast.makeText(context,  R.string.toast_no_language, Toast.LENGTH_SHORT)
+                            Toast.makeText(context, R.string.toast_no_language, Toast.LENGTH_SHORT)
                                 .apply {
                                     setGravity(Gravity.CENTER, 0, 0)
                                     show()
                                 }
                         }
                     } else {
-                        Toast.makeText(context,  R.string.toast_no_country, Toast.LENGTH_SHORT)
+                        Toast.makeText(context, R.string.toast_no_country, Toast.LENGTH_SHORT)
                             .apply {
                                 setGravity(Gravity.CENTER, 0, 0)
                                 show()
@@ -216,9 +244,11 @@ fun ScreenMain(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScreenListOfUsers(
-    appViewModel: AppViewModel
+    appViewModel: AppViewModel,
+    onItemClicked: () -> Unit
 ) {
 
     val appUiState by appViewModel.uiState.collectAsState()
@@ -227,30 +257,61 @@ fun ScreenListOfUsers(
 
     Log.d("MYLOG", "ScreenListOfUsers: ${itemsTest.toString()}")
 
-//    val itemsKek = arrayOf("kek1", "kek2", "kek3")
 
-    Column() {
 
-        LazyColumn() {
-//            itemsIndexed(itemsKek) { index, item ->
-//                Text(
-//                    text = itemsKek[index],
-//                    color = Color.White
-//                )
-//                Text(
-//                    text = item,
-//                    color = Color.White
-//                )
-//            }
-
-            itemsIndexed(appUiState.itemsOfUsers) { index, item ->
-                Text(
-                    text = item.id.toString(),
-                    color = Color.White
-                )
-
+    LazyColumn() {
+        itemsIndexed(appUiState.itemsOfUsers) { index, item ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        all = dimensionResource(id = R.dimen.padding_xsmall)
+                    )
+                    .height(dimensionResource(id = R.dimen.padding_xxlarge)),
+                shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_medium)),
+                elevation = CardDefaults.cardElevation(
+                    dimensionResource(id = R.dimen.padding_xsmall)
+                ),
+                colors = CardDefaults.cardColors(Black10),
+                onClick = {
+                    onItemClicked()
+                }
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    AsyncImage(
+                        model = item.avatar_url,
+                        contentDescription = "avatar",
+                        modifier = Modifier
+                            .padding(start = dimensionResource(id = R.dimen.padding_small))
+                            .clip(CircleShape)
+                            .size(dimensionResource(id = R.dimen.padding_xlarge)),
+                    )
+                    Text(
+                        text = item.login,
+                        color = Color.White,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = dimensionResource(id = R.dimen.padding_medium))
+                    )
+                    Text(
+                        text = item.id.toString(),
+                        color = Color.White,
+                        modifier = Modifier
+                            .weight(0.7f)
+                    )
+                }
             }
         }
     }
+}
+
+
+@Composable
+fun ScreenProfileOfUser(
+    appViewModel: AppViewModel
+) {
 
 }
