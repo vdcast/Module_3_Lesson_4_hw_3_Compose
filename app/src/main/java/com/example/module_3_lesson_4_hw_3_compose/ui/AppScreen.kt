@@ -1,6 +1,9 @@
 package com.example.module_3_lesson_4_hw_3_compose.ui
 
 import android.util.Log
+import android.view.Gravity
+import android.view.WindowId.FocusObserver
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,8 +29,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
@@ -91,6 +96,8 @@ fun ScreenMain(
 
     val focusManager = LocalFocusManager.current
 
+    val context = LocalContext.current
+
     val appUiState by appViewModel.uiState.collectAsState()
     var test by remember { mutableStateOf("") }
 
@@ -128,7 +135,7 @@ fun ScreenMain(
 
             OutlinedTextField(
                 value = countryTextField,
-                onValueChange = { countryTextField = it },
+                onValueChange = { countryTextField = it.lowercase() },
                 label = { Text("Country") },
                 textStyle = TextStyle(color = Color.White),
                 singleLine = true,
@@ -144,7 +151,7 @@ fun ScreenMain(
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_small)))
             OutlinedTextField(
                 value = languageTextField,
-                onValueChange = { languageTextField = it },
+                onValueChange = { languageTextField = it.lowercase() },
                 label = { Text("Language") },
                 textStyle = TextStyle(color = Color.White),
                 singleLine = true,
@@ -160,7 +167,25 @@ fun ScreenMain(
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_medium)))
             Button(
                 onClick = {
-                    onSearchClicked()
+                    if (!countryTextField.equals("")) {
+                        if (!languageTextField.equals("")) {
+                            val query = "location:$countryTextField language:$languageTextField"
+                            appViewModel.searchUsers(query)
+                            onSearchClicked()
+                        } else {
+                            Toast.makeText(context,  R.string.toast_no_language, Toast.LENGTH_SHORT)
+                                .apply {
+                                    setGravity(Gravity.CENTER, 0, 0)
+                                    show()
+                                }
+                        }
+                    } else {
+                        Toast.makeText(context,  R.string.toast_no_country, Toast.LENGTH_SHORT)
+                            .apply {
+                                setGravity(Gravity.CENTER, 0, 0)
+                                show()
+                            }
+                    }
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Purple40,
