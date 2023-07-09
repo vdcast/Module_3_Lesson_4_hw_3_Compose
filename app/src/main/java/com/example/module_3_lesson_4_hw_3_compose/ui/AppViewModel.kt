@@ -2,14 +2,12 @@ package com.example.module_3_lesson_4_hw_3_compose.ui
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.module_3_lesson_4_hw_3_compose.API
 import com.example.module_3_lesson_4_hw_3_compose.ResponseMain
 import com.example.module_3_lesson_4_hw_3_compose.RetrofitClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -22,7 +20,7 @@ class AppViewModel: ViewModel() {
     private val retrofit = RetrofitClient.getClient("https://api.github.com/")
         .create(API::class.java)
 
-    fun searchUsers(query: String) = viewModelScope.launch {
+    fun searchUsers(query: String) {
 
         retrofit.search(query).enqueue(object : Callback<ResponseMain> {
             override fun onResponse(
@@ -31,6 +29,20 @@ class AppViewModel: ViewModel() {
             ) {
                 if (response.isSuccessful) {
                     val itemsFromGithub = response.body()?.items
+
+                    Log.d("MYLOG", itemsFromGithub.toString())
+                    Log.d("MYLOG", "21 | ${_uiState.value.toString()}")
+
+                    if (itemsFromGithub == null) {
+                        Log.d("MYLOG", "items = null")
+                    } else {
+                        _uiState.value = AppUiState(itemsOfUsers = itemsFromGithub)
+                        Log.d("MYLOG", "22 | ${_uiState.value.toString()}")
+                    }
+
+
+
+
                     val idsList = itemsFromGithub?.map { it.id.toString() } ?: emptyList()
                     val idsArray = idsList.toTypedArray()
 

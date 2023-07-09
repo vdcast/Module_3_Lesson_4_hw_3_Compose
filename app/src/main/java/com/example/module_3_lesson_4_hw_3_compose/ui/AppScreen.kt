@@ -19,6 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,17 +42,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.module_3_lesson_4_hw_3_compose.API
 import com.example.module_3_lesson_4_hw_3_compose.R
-import com.example.module_3_lesson_4_hw_3_compose.ResponseMain
 import com.example.module_3_lesson_4_hw_3_compose.ui.theme.Purple40
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 @Composable
 fun MyApp(
-    retrofit: API
+    appViewModel: AppViewModel = viewModel()
 ) {
     val navController = rememberNavController()
     Image(
@@ -70,7 +66,7 @@ fun MyApp(
     ) {
         composable(ScreenRoutes.ScreenMain.route) {
             ScreenMain(
-                retrofit = retrofit,
+                appViewModel = appViewModel,
                 onSearchClicked = {
                     navController.navigate(ScreenRoutes.ScreenListOfUsers.route)
                 }
@@ -79,7 +75,7 @@ fun MyApp(
         composable(
             route = ScreenRoutes.ScreenListOfUsers.route
         ) {
-            ScreenListOfUsers()
+            ScreenListOfUsers(appViewModel = appViewModel)
         }
     }
 }
@@ -87,16 +83,16 @@ fun MyApp(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScreenMain(
-    retrofit: API,
-    onSearchClicked: () -> Unit,
-    appViewModel: AppViewModel = viewModel()
+    appViewModel: AppViewModel,
+    onSearchClicked: () -> Unit
 ) {
     var countryTextField by remember { mutableStateOf("") }
     var languageTextField by remember { mutableStateOf("") }
 
     val focusManager = LocalFocusManager.current
 
-
+    val appUiState by appViewModel.uiState.collectAsState()
+    var test by remember { mutableStateOf("") }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -125,6 +121,11 @@ fun ScreenMain(
                 .align(Alignment.BottomCenter),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Text(
+                text = test,
+                color = Color.White
+            )
+
             OutlinedTextField(
                 value = countryTextField,
                 onValueChange = { countryTextField = it },
@@ -160,16 +161,6 @@ fun ScreenMain(
             Button(
                 onClick = {
                     onSearchClicked()
-                    Log.d("MYLOG", "Country: $countryTextField, Language: $languageTextField")
-
-                    val country = countryTextField
-                    val language = languageTextField
-
-                    val query = "location:$country language:$language"
-
-                    Log.d("MYLOG", "query: $query")
-
-                    appViewModel.searchUsers(query)
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Purple40,
@@ -181,38 +172,18 @@ fun ScreenMain(
             }
             Button(
                 onClick = {
-                    val query = "location:ukraine+language:kotlin"
-                    retrofit.test("location:ukraine language:kotlin").enqueue(object : Callback<ResponseMain> {
-                        override fun onResponse(
-                            call: Call<ResponseMain>,
-                            response: Response<ResponseMain>
-                        ) {
-                            if (response.isSuccessful) {
-                                val itemsFromGithub = response.body()?.items
-                                val idsList = itemsFromGithub?.map { it.id.toString() } ?: emptyList()
-                                val idsArray = idsList.toTypedArray()
-
-                                val totalCount = response.body()?.total_count.toString()
-
-                                if (idsArray.isNotEmpty()) {
-                                    Log.d("MYLOG", "2 | ${idsArray[0]}, ${idsArray[1]}, ${idsArray[idsArray.size - 1]}")
-                                    Log.d("MYLOG", "2 | ${idsArray.size}")
-                                    Log.d("MYLOG", "2 | Total count: $totalCount")
-                                }
-                            } else {
-                                Log.d("MYLOG", "Response not successful. Code: ${response.code()}, Message: ${response.message()}")
-                            }
-
-                        }
-
-                        override fun onFailure(call: Call<ResponseMain>, t: Throwable) {
-                            Log.d("MYLOG", "Some error in query. 1")
-                        }
-
-                    })
+                    val query = "location:cyprus language:kotlin"
+                    appViewModel.searchUsers(query)
                 }
             ) {
                 Text(text = "TEST")
+            }
+            Button(
+                onClick = {
+                    test = appUiState.itemsOfUsers[0].id.toString()
+                }
+            ) {
+                Text(text = "TEST 2")
             }
         }
 
@@ -221,22 +192,38 @@ fun ScreenMain(
 }
 
 @Composable
-fun ScreenListOfUsers() {
+fun ScreenListOfUsers(
+    appViewModel: AppViewModel
+) {
 
-    val itemsKek = arrayOf("kek1", "kek2", "kek3")
+    val appUiState by appViewModel.uiState.collectAsState()
+
+    val itemsTest = appUiState.itemsOfUsers
+
+    Log.d("MYLOG", "ScreenListOfUsers: ${itemsTest.toString()}")
+
+//    val itemsKek = arrayOf("kek1", "kek2", "kek3")
 
     Column() {
 
         LazyColumn() {
-            itemsIndexed(itemsKek) { index, item ->
+//            itemsIndexed(itemsKek) { index, item ->
+//                Text(
+//                    text = itemsKek[index],
+//                    color = Color.White
+//                )
+//                Text(
+//                    text = item,
+//                    color = Color.White
+//                )
+//            }
+
+            itemsIndexed(appUiState.itemsOfUsers) { index, item ->
                 Text(
-                    text = itemsKek[index],
+                    text = item.id.toString(),
                     color = Color.White
                 )
-                Text(
-                    text = item,
-                    color = Color.White
-                )
+
             }
         }
     }
