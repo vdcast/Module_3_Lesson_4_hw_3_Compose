@@ -4,6 +4,7 @@ import android.util.Log
 import android.view.Gravity
 import android.view.WindowId.FocusObserver
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -98,14 +100,17 @@ fun MyApp(
                 }
             )
         }
-        composable(
-            route = ScreenRoutes.ScreenListOfUsers.route
-        ) {
+        composable(ScreenRoutes.ScreenListOfUsers.route) {
             ScreenListOfUsers(
                 appViewModel = appViewModel,
                 onItemClicked = {
-
+                    navController.navigate(ScreenRoutes.ScreenProfileOfUser.route)
                 }
+            )
+        }
+        composable(ScreenRoutes.ScreenProfileOfUser.route) {
+            ScreenProfileOfUser(
+                appViewModel = appViewModel
             )
         }
     }
@@ -250,14 +255,7 @@ fun ScreenListOfUsers(
     appViewModel: AppViewModel,
     onItemClicked: () -> Unit
 ) {
-
     val appUiState by appViewModel.uiState.collectAsState()
-
-    val itemsTest = appUiState.itemsOfUsers
-
-    Log.d("MYLOG", "ScreenListOfUsers: ${itemsTest.toString()}")
-
-
 
     LazyColumn() {
         itemsIndexed(appUiState.itemsOfUsers) { index, item ->
@@ -274,6 +272,8 @@ fun ScreenListOfUsers(
                 ),
                 colors = CardDefaults.cardColors(Black10),
                 onClick = {
+                    val query = item.login
+                    appViewModel.chosenUser(query)
                     onItemClicked()
                 }
             ) {
@@ -313,5 +313,24 @@ fun ScreenListOfUsers(
 fun ScreenProfileOfUser(
     appViewModel: AppViewModel
 ) {
+    val appUiState by appViewModel.uiState.collectAsState()
 
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.8f)
+            .padding(
+                all = dimensionResource(id = R.dimen.padding_small)
+            ),
+        shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_medium)),
+        elevation = CardDefaults.cardElevation(
+            dimensionResource(id = R.dimen.padding_xsmall)
+        ),
+        colors = CardDefaults.cardColors(Black10)
+    ) {
+        Text(
+            text = appUiState.currentUser.login,
+            color = Color.White
+        )
+    }
 }
