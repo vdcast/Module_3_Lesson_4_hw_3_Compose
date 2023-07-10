@@ -3,6 +3,7 @@ package com.example.module_3_lesson_4_hw_3_compose.ui
 import android.util.Log
 import android.view.Gravity
 import android.view.WindowId.FocusObserver
+import android.view.textclassifier.TextLinks.TextLink
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
@@ -25,6 +26,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -49,16 +51,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withAnnotation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -110,6 +118,14 @@ fun MyApp(
         }
         composable(ScreenRoutes.ScreenProfileOfUser.route) {
             ScreenProfileOfUser(
+                appViewModel = appViewModel,
+                onRepositoriesClicked = {
+                    navController.navigate(ScreenRoutes.ScreenRepositoriesOfUser.route)
+                }
+            )
+        }
+        composable(ScreenRoutes.ScreenRepositoriesOfUser.route) {
+            ScreenRepositoriesOfUser(
                 appViewModel = appViewModel
             )
         }
@@ -122,15 +138,17 @@ fun ScreenMain(
     appViewModel: AppViewModel,
     onSearchClicked: () -> Unit
 ) {
+    val appUiState by appViewModel.uiState.collectAsState()
+
     var countryTextField by remember { mutableStateOf("") }
     var languageTextField by remember { mutableStateOf("") }
 
+    val context = LocalContext.current
     val focusManager = LocalFocusManager.current
 
-    val context = LocalContext.current
-
-    val appUiState by appViewModel.uiState.collectAsState()
     var test by remember { mutableStateOf("") }
+    var test2 by remember { mutableStateOf("") }
+    var test3 by remember { mutableStateOf("") }
 
     Box(
         modifier = Modifier
@@ -163,6 +181,14 @@ fun ScreenMain(
         ) {
             Text(
                 text = test,
+                color = Color.White
+            )
+            Text(
+                text = test2,
+                color = Color.White
+            )
+            Text(
+                text = test3,
                 color = Color.White
             )
 
@@ -203,7 +229,7 @@ fun ScreenMain(
                     if (!countryTextField.equals("")) {
                         if (!languageTextField.equals("")) {
                             val query = "location:$countryTextField language:$languageTextField"
-                            appViewModel.searchUsers(query)
+                            appViewModel.searchUsers(query = query)
                             onSearchClicked()
                         } else {
                             Toast.makeText(context, R.string.toast_no_language, Toast.LENGTH_SHORT)
@@ -231,14 +257,17 @@ fun ScreenMain(
             Button(
                 onClick = {
                     val query = "location:cyprus language:kotlin"
-                    appViewModel.searchUsers(query)
+                    val user = "vdcast"
+                    appViewModel.testUsersRepositories(user)
                 }
             ) {
                 Text(text = "TEST")
             }
             Button(
                 onClick = {
-                    test = appUiState.itemsOfUsers[0].id.toString()
+                    test = appUiState.repositoriesOfUser[0].name
+                    test2 = appUiState.repositoriesOfUser[1].name
+                    test3 = appUiState.repositoriesOfUser[2].name
                 }
             ) {
                 Text(text = "TEST 2")
@@ -272,8 +301,7 @@ fun ScreenListOfUsers(
                 ),
                 colors = CardDefaults.cardColors(Black10),
                 onClick = {
-                    val query = item.login
-                    appViewModel.chosenUser(query)
+                    appViewModel.chosenUser(query = item.login)
                     onItemClicked()
                 }
             ) {
@@ -311,9 +339,11 @@ fun ScreenListOfUsers(
 
 @Composable
 fun ScreenProfileOfUser(
-    appViewModel: AppViewModel
+    appViewModel: AppViewModel,
+    onRepositoriesClicked: () -> Unit
 ) {
     val appUiState by appViewModel.uiState.collectAsState()
+
 
     Card(
         modifier = Modifier
@@ -328,9 +358,142 @@ fun ScreenProfileOfUser(
         ),
         colors = CardDefaults.cardColors(Black10)
     ) {
-        Text(
-            text = appUiState.currentUser.login,
-            color = Color.White
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(all = dimensionResource(id = R.dimen.padding_medium))
+        ) {
+
+            AsyncImage(
+                model = appUiState.currentUser.avatar_url,
+                contentDescription = "imageOnProfileScreen",
+                modifier = Modifier
+                    .clip(RoundedCornerShape(dimensionResource(id = R.dimen.padding_medium)))
+                    .align(Alignment.CenterHorizontally)
+            )
+            Text(
+                text = appUiState.currentUser.login,
+                color = Color.White,
+                fontSize = 20.sp
+            )
+
+            Row(
+                modifier = Modifier,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(id = R.string.profileLink),
+                    color = Color.White,
+                    fontSize = 16.sp
+                )
+                HyperlinkText(
+                    modifier = Modifier
+                        .padding(start = dimensionResource(id = R.dimen.padding_medium)),
+                    fullText = appUiState.currentUser.login,
+                    hyperLinks = mutableMapOf(
+                        appUiState.currentUser.login to appUiState.currentUser.html_url
+                    ),
+                    textStyle = TextStyle(color = Color.White),
+                    linkTextColor = Pink50,
+                    fontSize = 16.sp
+                )
+            }
+            Button(
+                onClick = {
+                    appViewModel.usersRepositories(
+                        user = appUiState.currentUser.login
+                    )
+                    onRepositoriesClicked()
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Purple40,
+                    contentColor = Color.White,
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Text(text = stringResource(id = R.string.button_repositories))
+            }
+
+
+        }
+    }
+}
+
+@Composable
+fun ScreenRepositoriesOfUser(
+    appViewModel: AppViewModel
+) {
+    val appUiState by appViewModel.uiState.collectAsState()
+    val usersRepositories = appUiState.repositoriesOfUser
+
+    LazyColumn() {
+        itemsIndexed(usersRepositories) { index, item ->
+
+            Text(
+                text = item.name,
+                color = Color.White
+            )
+        }
+    }
+}
+
+@Composable
+fun HyperlinkText(
+    modifier: Modifier = Modifier,
+    fullText: String,
+    hyperLinks: Map<String, String>,
+    textStyle: TextStyle = TextStyle.Default,
+    linkTextColor: Color = Color.Blue,
+    linkTextFontWeight: FontWeight = FontWeight.Normal,
+    linkTextDecoration: TextDecoration = TextDecoration.None,
+    fontSize: TextUnit = TextUnit.Unspecified
+) {
+    val annotatedString = buildAnnotatedString {
+        append(fullText)
+
+        for ((key, value) in hyperLinks) {
+
+            val startIndex = fullText.indexOf(key)
+            val endIndex = startIndex + key.length
+            addStyle(
+                style = SpanStyle(
+                    color = linkTextColor,
+                    fontSize = fontSize,
+                    fontWeight = linkTextFontWeight,
+                    textDecoration = linkTextDecoration
+                ),
+                start = startIndex,
+                end = endIndex
+            )
+            addStringAnnotation(
+                tag = "URL",
+                annotation = value,
+                start = startIndex,
+                end = endIndex
+            )
+        }
+        addStyle(
+            style = SpanStyle(
+                fontSize = fontSize
+            ),
+            start = 0,
+            end = fullText.length
         )
     }
+
+    val uriHandler = LocalUriHandler.current
+
+    ClickableText(
+        modifier = modifier,
+        text = annotatedString,
+        style = textStyle,
+        onClick = {
+            annotatedString
+                .getStringAnnotations("URL", it, it)
+                .firstOrNull()?.let { stringAnnotation ->
+                    uriHandler.openUri(stringAnnotation.item)
+                }
+        },
+    )
 }

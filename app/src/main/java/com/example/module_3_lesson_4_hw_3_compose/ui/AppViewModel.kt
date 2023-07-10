@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.module_3_lesson_4_hw_3_compose.API
 import com.example.module_3_lesson_4_hw_3_compose.ResponseMain
+import com.example.module_3_lesson_4_hw_3_compose.Repositories
 import com.example.module_3_lesson_4_hw_3_compose.RetrofitClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,7 +23,6 @@ class AppViewModel: ViewModel() {
         .create(API::class.java)
 
     fun searchUsers(query: String) {
-
         retrofit.search(query).enqueue(object : Callback<ResponseMain> {
             override fun onResponse(
                 call: Call<ResponseMain>,
@@ -30,23 +30,17 @@ class AppViewModel: ViewModel() {
             ) {
                 if (response.isSuccessful) {
                     val itemsFromGithub = response.body()?.items
-
                     Log.d("MYLOG", itemsFromGithub.toString())
                     Log.d("MYLOG", "21 | ${_uiState.value.toString()}")
-
                     if (itemsFromGithub == null) {
                         Log.d("MYLOG", "items = null")
                     } else {
                         _uiState.value = AppUiState(itemsOfUsers = itemsFromGithub)
                         Log.d("MYLOG", "22 | ${_uiState.value.toString()}")
                     }
-
-
                     val idsList = itemsFromGithub?.map { it.id.toString() } ?: emptyList()
                     val idsArray = idsList.toTypedArray()
-
                     val totalCount = response.body()?.total_count.toString()
-
                     if (idsArray.isNotEmpty()) {
                         Log.d("MYLOG", "${idsArray[0]}, ${idsArray[1]}, ${idsArray[idsArray.size - 1]}")
                         Log.d("MYLOG", "${idsArray.size}")
@@ -55,19 +49,14 @@ class AppViewModel: ViewModel() {
                 } else {
                     Log.d("MYLOG", "Response not successful. Code: ${response.code()}, Message: ${response.message()}")
                 }
-
             }
-
             override fun onFailure(call: Call<ResponseMain>, t: Throwable) {
-                Log.d("MYLOG", "Some error in query. 1")
+                Log.d("MYLOG", "Some error in query. 1 | Error: ${t.message}")
             }
-
         })
-
     }
 
     fun chosenUser(query: String) {
-
         retrofit.search(query).enqueue(object : Callback<ResponseMain> {
             override fun onResponse(
                 call: Call<ResponseMain>,
@@ -75,29 +64,76 @@ class AppViewModel: ViewModel() {
             ) {
                 if (response.isSuccessful) {
                     val itemsFromGithub = response.body()?.items
-
                     if (itemsFromGithub == null) {
                         Log.d("MYLOG", "items = null")
                     } else {
                         val currentUser = itemsFromGithub[0]
-//                        _uiState.value = AppUiState(currentUser = currentUser)
                         _uiState.update { currentState ->
                             currentState.copy(currentUser = currentUser)
                         }
-                        Log.d("MYLOG", "22 | ${_uiState.value.toString()}")
+                        Log.d("MYLOG", "33 | ${_uiState.value.toString()}")
                     }
                 } else {
                     Log.d("MYLOG", "Response not successful. Code: ${response.code()}, Message: ${response.message()}")
                 }
-
             }
-
             override fun onFailure(call: Call<ResponseMain>, t: Throwable) {
-                Log.d("MYLOG", "Some error in query. 1")
+                Log.d("MYLOG", "Some error in query. 2 | Error: ${t.message}")
             }
 
         })
 
     }
 
+    fun usersRepositories(user: String) {
+        retrofit.getRepositories(user).enqueue(object : Callback<List<Repositories>> {
+            override fun onResponse(
+                call: Call<List<Repositories>>,
+                response: Response<List<Repositories>>
+            ) {
+                if (response.isSuccessful) {
+                    val repositoriesOfUser = response.body()
+                    if (repositoriesOfUser == null) {
+                        Log.d("MYLOG", "repositories = null")
+                    } else {
+                        _uiState.update { currentState ->
+                            currentState.copy(repositoriesOfUser = repositoriesOfUser)
+                        }
+                        Log.d("MYLOG", "55 | ${_uiState.value.repositoriesOfUser}")
+                    }
+                } else {
+                    Log.d("MYLOG", "Response not successful. Code: ${response.code()}, Message: ${response.message()}")
+                }
+            }
+            override fun onFailure(call: Call<List<Repositories>>, t: Throwable) {
+                Log.d("MYLOG", "Some error in query. 3 | Error: ${t.message}")
+            }
+        })
+    }
+
+    fun testUsersRepositories(user: String) {
+        retrofit.testGetRepositories(user).enqueue(object : Callback<List<Repositories>> {
+            override fun onResponse(
+                call: Call<List<Repositories>>,
+                response: Response<List<Repositories>>
+            ) {
+                if (response.isSuccessful) {
+                    val repositoriesOfUser = response.body()
+                    if (repositoriesOfUser == null) {
+                        Log.d("MYLOG", "repositories = null")
+                    } else {
+                        _uiState.update { currentState ->
+                            currentState.copy(repositoriesOfUser = repositoriesOfUser)
+                        }
+                        Log.d("MYLOG", "55 | ${_uiState.value.repositoriesOfUser}")
+                    }
+                } else {
+                    Log.d("MYLOG", "Response not successful. Code: ${response.code()}, Message: ${response.message()}")
+                }
+            }
+            override fun onFailure(call: Call<List<Repositories>>, t: Throwable) {
+                Log.d("MYLOG", "Some error in query. 4 | Error: ${t.message}")
+            }
+        })
+    }
 }

@@ -4,4 +4,5 @@ sealed class ScreenRoutes(val route: String) {
     object ScreenMain : ScreenRoutes("screenMain")
     object ScreenListOfUsers : ScreenRoutes("screenListOfUsers")
     object ScreenProfileOfUser : ScreenRoutes("screenProfileOfUser")
+    object ScreenRepositoriesOfUser: ScreenRoutes("screenRepositoriesOfUser")
 }
