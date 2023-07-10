@@ -1,16 +1,9 @@
 package com.example.module_3_lesson_4_hw_3_compose.ui
 
-import android.util.Log
 import android.view.Gravity
-import android.view.WindowId.FocusObserver
-import android.view.textclassifier.TextLinks.TextLink
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,7 +25,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
@@ -46,7 +38,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -63,11 +54,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withAnnotation
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -76,8 +63,6 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.module_3_lesson_4_hw_3_compose.R
 import com.example.module_3_lesson_4_hw_3_compose.ui.theme.Black10
-import com.example.module_3_lesson_4_hw_3_compose.ui.theme.Module_3_Lesson_4_hw_3_ComposeTheme
-import com.example.module_3_lesson_4_hw_3_compose.ui.theme.Pink40
 import com.example.module_3_lesson_4_hw_3_compose.ui.theme.Pink50
 import com.example.module_3_lesson_4_hw_3_compose.ui.theme.Purple40
 
@@ -138,17 +123,11 @@ fun ScreenMain(
     appViewModel: AppViewModel,
     onSearchClicked: () -> Unit
 ) {
-    val appUiState by appViewModel.uiState.collectAsState()
-
     var countryTextField by remember { mutableStateOf("") }
     var languageTextField by remember { mutableStateOf("") }
 
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
-
-    var test by remember { mutableStateOf("") }
-    var test2 by remember { mutableStateOf("") }
-    var test3 by remember { mutableStateOf("") }
 
     Box(
         modifier = Modifier
@@ -171,27 +150,12 @@ fun ScreenMain(
                 )
                 .align(Alignment.TopCenter)
         )
-
-
         Column(
             modifier = Modifier
                 .padding(bottom = dimensionResource(id = R.dimen.padding_large))
                 .align(Alignment.BottomCenter),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = test,
-                color = Color.White
-            )
-            Text(
-                text = test2,
-                color = Color.White
-            )
-            Text(
-                text = test3,
-                color = Color.White
-            )
-
             OutlinedTextField(
                 value = countryTextField,
                 onValueChange = { countryTextField = it.lowercase() },
@@ -254,27 +218,7 @@ fun ScreenMain(
             ) {
                 Text(text = stringResource(id = R.string.button_search))
             }
-            Button(
-                onClick = {
-                    val query = "location:cyprus language:kotlin"
-                    val user = "vdcast"
-                    appViewModel.testUsersRepositories(user)
-                }
-            ) {
-                Text(text = "TEST")
-            }
-            Button(
-                onClick = {
-                    test = appUiState.repositoriesOfUser[0].name
-                    test2 = appUiState.repositoriesOfUser[1].name
-                    test3 = appUiState.repositoriesOfUser[2].name
-                }
-            ) {
-                Text(text = "TEST 2")
-            }
         }
-
-
     }
 }
 
@@ -284,10 +228,10 @@ fun ScreenListOfUsers(
     appViewModel: AppViewModel,
     onItemClicked: () -> Unit
 ) {
-    val appUiState by appViewModel.uiState.collectAsState()
+    val searchUiState by appViewModel.searchUiState.collectAsState()
 
     LazyColumn() {
-        itemsIndexed(appUiState.itemsOfUsers) { index, item ->
+        itemsIndexed(searchUiState.itemsOfUsers) { index, item ->
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -342,7 +286,7 @@ fun ScreenProfileOfUser(
     appViewModel: AppViewModel,
     onRepositoriesClicked: () -> Unit
 ) {
-    val appUiState by appViewModel.uiState.collectAsState()
+    val profileUiState by appViewModel.profileUiState.collectAsState()
 
 
     Card(
@@ -365,14 +309,14 @@ fun ScreenProfileOfUser(
         ) {
 
             AsyncImage(
-                model = appUiState.currentUser.avatar_url,
+                model = profileUiState.currentUser.avatar_url,
                 contentDescription = "imageOnProfileScreen",
                 modifier = Modifier
                     .clip(RoundedCornerShape(dimensionResource(id = R.dimen.padding_medium)))
                     .align(Alignment.CenterHorizontally)
             )
             Text(
-                text = appUiState.currentUser.login,
+                text = profileUiState.currentUser.login,
                 color = Color.White,
                 fontSize = 20.sp
             )
@@ -389,9 +333,9 @@ fun ScreenProfileOfUser(
                 HyperlinkText(
                     modifier = Modifier
                         .padding(start = dimensionResource(id = R.dimen.padding_medium)),
-                    fullText = appUiState.currentUser.login,
+                    fullText = profileUiState.currentUser.login,
                     hyperLinks = mutableMapOf(
-                        appUiState.currentUser.login to appUiState.currentUser.html_url
+                        profileUiState.currentUser.login to profileUiState.currentUser.html_url
                     ),
                     textStyle = TextStyle(color = Color.White),
                     linkTextColor = Pink50,
@@ -401,7 +345,7 @@ fun ScreenProfileOfUser(
             Button(
                 onClick = {
                     appViewModel.usersRepositories(
-                        user = appUiState.currentUser.login
+                        user = profileUiState.currentUser.login
                     )
                     onRepositoriesClicked()
                 },
@@ -424,8 +368,8 @@ fun ScreenProfileOfUser(
 fun ScreenRepositoriesOfUser(
     appViewModel: AppViewModel
 ) {
-    val appUiState by appViewModel.uiState.collectAsState()
-    val usersRepositories = appUiState.repositoriesOfUser
+    val reposUiState by appViewModel.reposUiState.collectAsState()
+    val usersRepositories = reposUiState.repositoriesOfUser
 
     LazyColumn() {
         itemsIndexed(usersRepositories) { index, item ->

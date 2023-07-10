@@ -16,13 +16,21 @@ import retrofit2.Response
 
 
 class AppViewModel: ViewModel() {
-    private val _uiState = MutableStateFlow(AppUiState())
-    val uiState: StateFlow<AppUiState> = _uiState.asStateFlow()
+    private val _searchUiState = MutableStateFlow(SearchUiState())
+    val searchUiState: StateFlow<SearchUiState> = _searchUiState.asStateFlow()
+
+    private val _profileUiState = MutableStateFlow(ProfileUiState())
+    val profileUiState: StateFlow<ProfileUiState> = _profileUiState.asStateFlow()
+
+    private val _reposUiState = MutableStateFlow(ReposUiState())
+    val reposUiState: StateFlow<ReposUiState> = _reposUiState.asStateFlow()
 
     private val retrofit = RetrofitClient.getClient("https://api.github.com/")
         .create(API::class.java)
 
     fun searchUsers(query: String) {
+        _searchUiState.value = SearchUiState()
+
         retrofit.search(query).enqueue(object : Callback<ResponseMain> {
             override fun onResponse(
                 call: Call<ResponseMain>,
@@ -31,12 +39,12 @@ class AppViewModel: ViewModel() {
                 if (response.isSuccessful) {
                     val itemsFromGithub = response.body()?.items
                     Log.d("MYLOG", itemsFromGithub.toString())
-                    Log.d("MYLOG", "21 | ${_uiState.value.toString()}")
+                    Log.d("MYLOG", "21 | ${_searchUiState.value.toString()}")
                     if (itemsFromGithub == null) {
                         Log.d("MYLOG", "items = null")
                     } else {
-                        _uiState.value = AppUiState(itemsOfUsers = itemsFromGithub)
-                        Log.d("MYLOG", "22 | ${_uiState.value.toString()}")
+                        _searchUiState.value = SearchUiState(itemsOfUsers = itemsFromGithub)
+                        Log.d("MYLOG", "22 | ${_searchUiState.value.toString()}")
                     }
                     val idsList = itemsFromGithub?.map { it.id.toString() } ?: emptyList()
                     val idsArray = idsList.toTypedArray()
@@ -57,6 +65,8 @@ class AppViewModel: ViewModel() {
     }
 
     fun chosenUser(query: String) {
+        _profileUiState.value = ProfileUiState()
+
         retrofit.search(query).enqueue(object : Callback<ResponseMain> {
             override fun onResponse(
                 call: Call<ResponseMain>,
@@ -68,10 +78,10 @@ class AppViewModel: ViewModel() {
                         Log.d("MYLOG", "items = null")
                     } else {
                         val currentUser = itemsFromGithub[0]
-                        _uiState.update { currentState ->
+                        _profileUiState.update { currentState ->
                             currentState.copy(currentUser = currentUser)
                         }
-                        Log.d("MYLOG", "33 | ${_uiState.value.toString()}")
+                        Log.d("MYLOG", "33 | ${_profileUiState.value.toString()}")
                     }
                 } else {
                     Log.d("MYLOG", "Response not successful. Code: ${response.code()}, Message: ${response.message()}")
@@ -86,6 +96,8 @@ class AppViewModel: ViewModel() {
     }
 
     fun usersRepositories(user: String) {
+        _reposUiState.value = ReposUiState()
+
         retrofit.getRepositories(user).enqueue(object : Callback<List<Repositories>> {
             override fun onResponse(
                 call: Call<List<Repositories>>,
@@ -96,10 +108,10 @@ class AppViewModel: ViewModel() {
                     if (repositoriesOfUser == null) {
                         Log.d("MYLOG", "repositories = null")
                     } else {
-                        _uiState.update { currentState ->
+                        _reposUiState.update { currentState ->
                             currentState.copy(repositoriesOfUser = repositoriesOfUser)
                         }
-                        Log.d("MYLOG", "55 | ${_uiState.value.repositoriesOfUser}")
+                        Log.d("MYLOG", "55 | ${_reposUiState.value.repositoriesOfUser}")
                     }
                 } else {
                     Log.d("MYLOG", "Response not successful. Code: ${response.code()}, Message: ${response.message()}")
@@ -122,10 +134,10 @@ class AppViewModel: ViewModel() {
                     if (repositoriesOfUser == null) {
                         Log.d("MYLOG", "repositories = null")
                     } else {
-                        _uiState.update { currentState ->
+                        _reposUiState.update { currentState ->
                             currentState.copy(repositoriesOfUser = repositoriesOfUser)
                         }
-                        Log.d("MYLOG", "55 | ${_uiState.value.repositoriesOfUser}")
+                        Log.d("MYLOG", "55 | ${_reposUiState.value.repositoriesOfUser}")
                     }
                 } else {
                     Log.d("MYLOG", "Response not successful. Code: ${response.code()}, Message: ${response.message()}")
