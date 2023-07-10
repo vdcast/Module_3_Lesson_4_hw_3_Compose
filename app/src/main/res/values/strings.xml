@@ -4,7 +4,8 @@
     <string name="button_search">Search</string>
     <string name="toast_no_country">Input country</string>
     <string name="toast_no_language">Input language</string>
-    <string name="profileLink">GitHub Profile:</string>
+    <string name="profileLink">GitHub Profile</string>
     <string name="button_repositories">Show Repositories</string>
     <string name="button_back">Back</string>
+    <string name="open">Open</string>
 </resources>

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
@@ -26,6 +27,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -50,21 +52,30 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
+import com.example.module_3_lesson_4_hw_3_compose.Items
 import com.example.module_3_lesson_4_hw_3_compose.R
 import com.example.module_3_lesson_4_hw_3_compose.ui.theme.Black10
 import com.example.module_3_lesson_4_hw_3_compose.ui.theme.Pink50
 import com.example.module_3_lesson_4_hw_3_compose.ui.theme.Purple40
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 @Composable
 fun MyApp(
@@ -272,7 +283,7 @@ fun ScreenListOfUsers(
                         text = item.id.toString(),
                         color = Color.White,
                         modifier = Modifier
-                            .weight(0.7f)
+                            .weight(0.5f)
                     )
                 }
             }
@@ -287,12 +298,12 @@ fun ScreenProfileOfUser(
     onRepositoriesClicked: () -> Unit
 ) {
     val profileUiState by appViewModel.profileUiState.collectAsState()
-
+    val uriHandler = LocalUriHandler.current
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .fillMaxHeight(0.8f)
+            .wrapContentHeight()
             .padding(
                 all = dimensionResource(id = R.dimen.padding_small)
             ),
@@ -304,7 +315,6 @@ fun ScreenProfileOfUser(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
                 .padding(all = dimensionResource(id = R.dimen.padding_medium))
         ) {
 
@@ -316,33 +326,48 @@ fun ScreenProfileOfUser(
                     .align(Alignment.CenterHorizontally)
             )
             Text(
+                modifier = Modifier
+                    .padding(
+                        top = dimensionResource(id = R.dimen.padding_medium)
+                    )
+                    .align(Alignment.CenterHorizontally),
                 text = profileUiState.currentUser.login,
                 color = Color.White,
-                fontSize = 20.sp
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold
             )
-
-            Row(
-                modifier = Modifier,
-                verticalAlignment = Alignment.CenterVertically
+            
+            Divider(
+                thickness = dimensionResource(id = R.dimen.thickness_divider),
+                modifier = Modifier
+                    .padding(top = dimensionResource(id = R.dimen.padding_medium))
+            )
+            Button(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        top = dimensionResource(id = R.dimen.padding_medium)
+                    ),
+                onClick = {
+                    uriHandler.openUri(profileUiState.currentUser.html_url)
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Purple40,
+                    contentColor = Color.White,
+                )
             ) {
                 Text(
                     text = stringResource(id = R.string.profileLink),
-                    color = Color.White,
-                    fontSize = 16.sp
-                )
-                HyperlinkText(
-                    modifier = Modifier
-                        .padding(start = dimensionResource(id = R.dimen.padding_medium)),
-                    fullText = profileUiState.currentUser.login,
-                    hyperLinks = mutableMapOf(
-                        profileUiState.currentUser.login to profileUiState.currentUser.html_url
-                    ),
-                    textStyle = TextStyle(color = Color.White),
-                    linkTextColor = Pink50,
                     fontSize = 16.sp
                 )
             }
             Button(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        top = dimensionResource(id = R.dimen.padding_small),
+                        bottom = dimensionResource(id = R.dimen.padding_small)
+                    ),
                 onClick = {
                     appViewModel.usersRepositories(
                         user = profileUiState.currentUser.login
@@ -352,14 +377,13 @@ fun ScreenProfileOfUser(
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Purple40,
                     contentColor = Color.White,
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
+                )
             ) {
-                Text(text = stringResource(id = R.string.button_repositories))
+                Text(
+                    text = stringResource(id = R.string.button_repositories),
+                    fontSize = 16.sp
+                )
             }
-
-
         }
     }
 }
@@ -371,13 +395,34 @@ fun ScreenRepositoriesOfUser(
     val reposUiState by appViewModel.reposUiState.collectAsState()
     val usersRepositories = reposUiState.repositoriesOfUser
 
-    LazyColumn() {
+    LazyColumn(
+        modifier = Modifier.padding(all = 16.dp)
+    ) {
         itemsIndexed(usersRepositories) { index, item ->
 
-            Text(
-                text = item.name,
-                color = Color.White
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = item.name,
+                    color = Color.White,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                HyperlinkText(
+                    modifier = Modifier
+                        .weight(0.2f)
+                        .padding(start = dimensionResource(id = R.dimen.padding_medium)),
+                    fullText = stringResource(id = R.string.open),
+                    hyperLinks = mutableMapOf(
+                        stringResource(id = R.string.open) to reposUiState.repositoriesOfUser[index].html_url
+                    ),
+                    linkTextColor = Pink50
+                )
+            }
+
+
         }
     }
 }
@@ -390,7 +435,7 @@ fun HyperlinkText(
     textStyle: TextStyle = TextStyle.Default,
     linkTextColor: Color = Color.Blue,
     linkTextFontWeight: FontWeight = FontWeight.Normal,
-    linkTextDecoration: TextDecoration = TextDecoration.None,
+    linkTextDecoration: TextDecoration = TextDecoration.Underline,
     fontSize: TextUnit = TextUnit.Unspecified
 ) {
     val annotatedString = buildAnnotatedString {
@@ -403,7 +448,7 @@ fun HyperlinkText(
             addStyle(
                 style = SpanStyle(
                     color = linkTextColor,
-                    fontSize = fontSize,
+                    fontSize = 18.sp,
                     fontWeight = linkTextFontWeight,
                     textDecoration = linkTextDecoration
                 ),
@@ -417,13 +462,6 @@ fun HyperlinkText(
                 end = endIndex
             )
         }
-        addStyle(
-            style = SpanStyle(
-                fontSize = fontSize
-            ),
-            start = 0,
-            end = fullText.length
-        )
     }
 
     val uriHandler = LocalUriHandler.current
