@@ -28,7 +28,7 @@ class AppViewModel: ViewModel() {
     private val retrofit = RetrofitClient.getClient("https://api.github.com/")
         .create(API::class.java)
 
-    fun searchUsers(query: String) {
+    fun searchUsers(query: String, textfieldOne: String, textfieldTwo: String) {
         _searchUiState.value = SearchUiState()
 
         retrofit.search(query).enqueue(object : Callback<ResponseMain> {
@@ -43,7 +43,11 @@ class AppViewModel: ViewModel() {
                     if (itemsFromGithub == null) {
                         Log.d("MYLOG", "items = null")
                     } else {
-                        _searchUiState.value = SearchUiState(itemsOfUsers = itemsFromGithub)
+                        _searchUiState.value = SearchUiState(
+                            itemsOfUsers = itemsFromGithub,
+                            textfieldOne = textfieldOne,
+                            textfieldTwo = textfieldTwo
+                        )
                         Log.d("MYLOG", "22 | ${_searchUiState.value.toString()}")
                     }
                     val idsList = itemsFromGithub?.map { it.id.toString() } ?: emptyList()
@@ -109,7 +113,10 @@ class AppViewModel: ViewModel() {
                         Log.d("MYLOG", "repositories = null")
                     } else {
                         _reposUiState.update { currentState ->
-                            currentState.copy(repositoriesOfUser = repositoriesOfUser)
+                            currentState.copy(
+                                repositoriesOfUser = repositoriesOfUser,
+                                loginOfUser = repositoriesOfUser[0].owner.login
+                            )
                         }
                         Log.d("MYLOG", "55 | ${_reposUiState.value.repositoriesOfUser}")
                     }
@@ -119,32 +126,6 @@ class AppViewModel: ViewModel() {
             }
             override fun onFailure(call: Call<List<Repositories>>, t: Throwable) {
                 Log.d("MYLOG", "Some error in query. 3 | Error: ${t.message}")
-            }
-        })
-    }
-
-    fun testUsersRepositories(user: String) {
-        retrofit.testGetRepositories(user).enqueue(object : Callback<List<Repositories>> {
-            override fun onResponse(
-                call: Call<List<Repositories>>,
-                response: Response<List<Repositories>>
-            ) {
-                if (response.isSuccessful) {
-                    val repositoriesOfUser = response.body()
-                    if (repositoriesOfUser == null) {
-                        Log.d("MYLOG", "repositories = null")
-                    } else {
-                        _reposUiState.update { currentState ->
-                            currentState.copy(repositoriesOfUser = repositoriesOfUser)
-                        }
-                        Log.d("MYLOG", "55 | ${_reposUiState.value.repositoriesOfUser}")
-                    }
-                } else {
-                    Log.d("MYLOG", "Response not successful. Code: ${response.code()}, Message: ${response.message()}")
-                }
-            }
-            override fun onFailure(call: Call<List<Repositories>>, t: Throwable) {
-                Log.d("MYLOG", "Some error in query. 4 | Error: ${t.message}")
             }
         })
     }

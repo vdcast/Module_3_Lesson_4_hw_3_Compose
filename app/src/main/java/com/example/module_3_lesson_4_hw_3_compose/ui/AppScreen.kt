@@ -3,11 +3,14 @@ package com.example.module_3_lesson_4_hw_3_compose.ui
 import android.view.Gravity
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -73,6 +76,7 @@ import com.example.module_3_lesson_4_hw_3_compose.R
 import com.example.module_3_lesson_4_hw_3_compose.ui.theme.Black10
 import com.example.module_3_lesson_4_hw_3_compose.ui.theme.Pink50
 import com.example.module_3_lesson_4_hw_3_compose.ui.theme.Purple40
+import com.example.module_3_lesson_4_hw_3_compose.ui.theme.White10
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -146,12 +150,6 @@ fun ScreenMain(
             .clickable { focusManager.clearFocus() }
     ) {
         Text(
-            text = stringResource(id = R.string.text_intro),
-            textAlign = TextAlign.Center,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold,
-            fontFamily = FontFamily.Monospace,
-            color = Color.White,
             modifier = Modifier
                 .padding(
                     top = dimensionResource(id = R.dimen.padding_xlarge),
@@ -159,7 +157,13 @@ fun ScreenMain(
                     start = dimensionResource(id = R.dimen.padding_large),
                     end = dimensionResource(id = R.dimen.padding_large)
                 )
-                .align(Alignment.TopCenter)
+                .align(Alignment.TopCenter),
+            text = stringResource(id = R.string.text_intro),
+            textAlign = TextAlign.Center,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            fontFamily = FontFamily.Monospace,
+            color = Color.White
         )
         Column(
             modifier = Modifier
@@ -204,7 +208,11 @@ fun ScreenMain(
                     if (!countryTextField.equals("")) {
                         if (!languageTextField.equals("")) {
                             val query = "location:$countryTextField language:$languageTextField"
-                            appViewModel.searchUsers(query = query)
+                            appViewModel.searchUsers(
+                                query = query,
+                                textfieldOne = countryTextField,
+                                textfieldTwo = languageTextField
+                            )
                             onSearchClicked()
                         } else {
                             Toast.makeText(context, R.string.toast_no_language, Toast.LENGTH_SHORT)
@@ -241,7 +249,28 @@ fun ScreenListOfUsers(
 ) {
     val searchUiState by appViewModel.searchUiState.collectAsState()
 
-    LazyColumn() {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        item {
+            Text(
+                modifier = Modifier
+                    .padding(
+                        all = dimensionResource(id = R.dimen.padding_medium)
+                    ),
+                text = stringResource(
+                    id = R.string.text_search_list,
+                    searchUiState.textfieldOne,
+                    searchUiState.textfieldTwo
+                ),
+                textAlign = TextAlign.Center,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = FontFamily.Monospace,
+                color = Color.White
+            )
+        }
         itemsIndexed(searchUiState.itemsOfUsers) { index, item ->
             Card(
                 modifier = Modifier
@@ -327,16 +356,14 @@ fun ScreenProfileOfUser(
             )
             Text(
                 modifier = Modifier
-                    .padding(
-                        top = dimensionResource(id = R.dimen.padding_medium)
-                    )
+                    .padding(top = dimensionResource(id = R.dimen.padding_medium))
                     .align(Alignment.CenterHorizontally),
                 text = profileUiState.currentUser.login,
                 color = Color.White,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
             )
-            
+
             Divider(
                 thickness = dimensionResource(id = R.dimen.thickness_divider),
                 modifier = Modifier
@@ -395,34 +422,74 @@ fun ScreenRepositoriesOfUser(
     val reposUiState by appViewModel.reposUiState.collectAsState()
     val usersRepositories = reposUiState.repositoriesOfUser
 
-    LazyColumn(
-        modifier = Modifier.padding(all = 16.dp)
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .padding(
+                all = dimensionResource(id = R.dimen.padding_small)
+            ),
+        shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_medium)),
+        elevation = CardDefaults.cardElevation(
+            dimensionResource(id = R.dimen.padding_xsmall)
+        ),
+        colors = CardDefaults.cardColors(Black10)
     ) {
-        itemsIndexed(usersRepositories) { index, item ->
-
-            Row(
-                modifier = Modifier.fillMaxWidth()
-            ) {
+        LazyColumn(
+            modifier = Modifier.padding(all = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            item {
                 Text(
-                    modifier = Modifier.weight(1f),
-                    text = item.name,
-                    color = Color.White,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                HyperlinkText(
                     modifier = Modifier
-                        .weight(0.2f)
-                        .padding(start = dimensionResource(id = R.dimen.padding_medium)),
-                    fullText = stringResource(id = R.string.open),
-                    hyperLinks = mutableMapOf(
-                        stringResource(id = R.string.open) to reposUiState.repositoriesOfUser[index].html_url
+                        .padding(
+                            start = dimensionResource(id = R.dimen.padding_medium),
+                            end = dimensionResource(id = R.dimen.padding_medium),
+                            top = dimensionResource(id = R.dimen.padding_small),
+                            bottom = dimensionResource(id = R.dimen.padding_medium),
+                        ),
+                    text = stringResource(
+                        id = R.string.text_repositories_of_user,
+                        reposUiState.loginOfUser
                     ),
-                    linkTextColor = Pink50
+                    textAlign = TextAlign.Center,
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
-
-
+            itemsIndexed(usersRepositories) { index, item ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            horizontal = dimensionResource(id = R.dimen.padding_xsmall),
+                            vertical = dimensionResource(id = R.dimen.padding_xsmall)
+                        ),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        modifier = Modifier.weight(1f),
+                        text = item.name,
+                        color = Color.White,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(
+                        modifier = Modifier
+                            .width(dimensionResource(id = R.dimen.padding_small))
+                    )
+                    HyperlinkText(
+                        modifier = Modifier
+                            .padding(start = dimensionResource(id = R.dimen.padding_medium)),
+                        fullText = stringResource(id = R.string.open),
+                        hyperLinks = mutableMapOf(
+                            stringResource(id = R.string.open) to reposUiState.repositoriesOfUser[index].html_url
+                        ),
+                        linkTextColor = Pink50
+                    )
+                }
+            }
         }
     }
 }

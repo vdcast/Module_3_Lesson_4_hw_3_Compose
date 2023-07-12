@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">Module_3_Lesson_4_hw_3_Compose</string>
     <string name="text_intro">Search for talents from GitHub.\nPut in country and programming language.</string>
+    <string name="text_search_list">List of users from GitHub\nCountry: %s. Language: %s.</string>
+    <string name="text_repositories_of_user">Repos of %s</string>
     <string name="button_search">Search</string>
     <string name="toast_no_country">Input country</string>
     <string name="toast_no_language">Input language</string>
