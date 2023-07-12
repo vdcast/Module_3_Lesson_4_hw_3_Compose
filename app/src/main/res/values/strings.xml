@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Module_3_Lesson_4_hw_3_Compose</string>
+    <string name="app_name">GitHub Search</string>
     <string name="text_intro">Search for talents from GitHub.\nPut in username or country and programming language.</string>
     <string name="text_search_list_country_language">List of users from GitHub\nCountry: %s | Language: %s</string>
     <string name="text_search_list_username">List of users from GitHub\nUsername: %s</string>
