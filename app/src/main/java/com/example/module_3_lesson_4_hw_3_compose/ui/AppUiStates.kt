@@ -6,7 +6,8 @@ import com.example.module_3_lesson_4_hw_3_compose.Repositories
 data class SearchUiState(
     val itemsOfUsers: List<Items> = listOf(),
     val textfieldOne: String = "",
-    val textfieldTwo: String = ""
+    val textfieldTwo: String = "",
+    val usernameSearch: Boolean = true
 )
 data class ProfileUiState(
     val currentUser: Items = Items(

@@ -1,17 +1,15 @@
 package com.example.module_3_lesson_4_hw_3_compose.ui
 
+import android.util.Log
 import android.view.Gravity
 import android.widget.Toast
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.displayCutoutPadding
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -55,31 +53,24 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
-import com.example.module_3_lesson_4_hw_3_compose.Items
 import com.example.module_3_lesson_4_hw_3_compose.R
 import com.example.module_3_lesson_4_hw_3_compose.ui.theme.Black10
 import com.example.module_3_lesson_4_hw_3_compose.ui.theme.Pink50
 import com.example.module_3_lesson_4_hw_3_compose.ui.theme.Purple40
-import com.example.module_3_lesson_4_hw_3_compose.ui.theme.White10
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import com.example.module_3_lesson_4_hw_3_compose.ui.theme.White80
 
 @Composable
 fun MyApp(
@@ -93,7 +84,6 @@ fun MyApp(
         modifier = Modifier
             .fillMaxSize()
 //            .graphicsLayer { alpha = 0.9f }
-
     )
 
     NavHost(
@@ -140,6 +130,7 @@ fun ScreenMain(
 ) {
     var countryTextField by remember { mutableStateOf("") }
     var languageTextField by remember { mutableStateOf("") }
+    var usernameTextField by remember { mutableStateOf("") }
 
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
@@ -172,8 +163,45 @@ fun ScreenMain(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             OutlinedTextField(
+                value = usernameTextField,
+                onValueChange = {
+                    usernameTextField = it.lowercase()
+                    if (it.isNotEmpty()) {
+                        countryTextField = ""
+                        languageTextField = ""
+                    }
+                },
+                label = { Text("Username") },
+                textStyle = TextStyle(color = Color.White),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        focusManager.clearFocus()
+                    }
+                ),
+            )
+            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_small)))
+            Text(
+                modifier = Modifier
+                    .align(Alignment.Start)
+                    .padding(start = dimensionResource(id = R.dimen.padding_large)),
+                text = stringResource(id = R.string.or),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = FontFamily.Monospace,
+                color = White80
+            )
+            OutlinedTextField(
                 value = countryTextField,
-                onValueChange = { countryTextField = it.lowercase() },
+                onValueChange = {
+                    countryTextField = it.lowercase()
+                    if (it.isNotEmpty()) {
+                        usernameTextField = ""
+                    }
+                },
                 label = { Text("Country") },
                 textStyle = TextStyle(color = Color.White),
                 singleLine = true,
@@ -189,7 +217,12 @@ fun ScreenMain(
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_small)))
             OutlinedTextField(
                 value = languageTextField,
-                onValueChange = { languageTextField = it.lowercase() },
+                onValueChange = {
+                    languageTextField = it.lowercase()
+                    if (it.isNotEmpty()) {
+                        usernameTextField = ""
+                    }
+                },
                 label = { Text("Language") },
                 textStyle = TextStyle(color = Color.White),
                 singleLine = true,
@@ -204,36 +237,54 @@ fun ScreenMain(
             )
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_medium)))
             Button(
+                modifier = Modifier.width(dimensionResource(id = R.dimen.button_width)),
                 onClick = {
-                    if (!countryTextField.equals("")) {
-                        if (!languageTextField.equals("")) {
-                            val query = "location:$countryTextField language:$languageTextField"
-                            appViewModel.searchUsers(
-                                query = query,
-                                textfieldOne = countryTextField,
-                                textfieldTwo = languageTextField
+
+                    if (usernameTextField.equals("") && countryTextField.equals("")) {
+                        Toast.makeText(
+                            context,
+                            R.string.toast_no_username_or_country,
+                            Toast.LENGTH_SHORT
+                        ).apply {
+                            setGravity(Gravity.CENTER, 0, 0)
+                            show()
+                        }
+                    } else {
+                        if (!usernameTextField.equals("")) {
+                            appViewModel.searchByUsername(
+                                query = usernameTextField,
+                                usernameTextField
                             )
                             onSearchClicked()
-                        } else {
-                            Toast.makeText(context, R.string.toast_no_language, Toast.LENGTH_SHORT)
-                                .apply {
+                        }
+                        if (!countryTextField.equals("")) {
+                            if (!languageTextField.equals("")) {
+                                val query = "location:$countryTextField language:$languageTextField"
+                                appViewModel.searchByCountryAndLanguage(
+                                    query = query,
+                                    textfieldOne = countryTextField,
+                                    textfieldTwo = languageTextField
+                                )
+                                onSearchClicked()
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    R.string.toast_no_language,
+                                    Toast.LENGTH_SHORT
+                                ).apply {
                                     setGravity(Gravity.CENTER, 0, 0)
                                     show()
                                 }
-                        }
-                    } else {
-                        Toast.makeText(context, R.string.toast_no_country, Toast.LENGTH_SHORT)
-                            .apply {
-                                setGravity(Gravity.CENTER, 0, 0)
-                                show()
                             }
+                        }
                     }
+
+
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Purple40,
                     contentColor = Color.White,
-                ),
-                modifier = Modifier.width(dimensionResource(id = R.dimen.button_width))
+                )
             ) {
                 Text(text = stringResource(id = R.string.button_search))
             }
@@ -260,7 +311,10 @@ fun ScreenListOfUsers(
                         all = dimensionResource(id = R.dimen.padding_medium)
                     ),
                 text = stringResource(
-                    id = R.string.text_search_list,
+                    id = when {
+                        searchUiState.usernameSearch -> R.string.text_search_list_username
+                        else -> R.string.text_search_list_country_language
+                    },
                     searchUiState.textfieldOne,
                     searchUiState.textfieldTwo
                 ),
@@ -436,7 +490,9 @@ fun ScreenRepositoriesOfUser(
         colors = CardDefaults.cardColors(Black10)
     ) {
         LazyColumn(
-            modifier = Modifier.padding(all = 16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(all = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
@@ -457,6 +513,26 @@ fun ScreenRepositoriesOfUser(
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
+            }
+            if (usersRepositories.size == 0) {
+                item {
+                    Text(
+                        modifier = Modifier
+                            .padding(
+                                start = dimensionResource(id = R.dimen.padding_medium),
+                                end = dimensionResource(id = R.dimen.padding_medium),
+                                top = dimensionResource(id = R.dimen.padding_small),
+                                bottom = dimensionResource(id = R.dimen.padding_medium),
+                            ),
+                        text = stringResource(
+                            id = R.string.repositories_is_empty
+                        ),
+                        textAlign = TextAlign.Start,
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
             itemsIndexed(usersRepositories) { index, item ->
                 Row(

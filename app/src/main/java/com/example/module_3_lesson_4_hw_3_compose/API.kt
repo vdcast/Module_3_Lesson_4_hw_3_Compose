@@ -7,15 +7,15 @@ import retrofit2.http.Query
 
 interface API {
     @GET("search/users")
-    fun search(
+    fun searchCountryLanguage(
         @Query("q") query: String
     ): Call<ResponseMain>
     @GET("users/{user}/repos")
     fun getRepositories(
         @Path("user") user: String
     ): Call<List<Repositories>>
-    @GET("users/{user}/repos")
-    fun testGetRepositories(
-        @Path("user") user: String
-    ): Call<List<Repositories>>
+    @GET("search/users")
+    fun searchByUsername(
+        @Query("q") query: String
+    ): Call<ResponseMain>
 }
