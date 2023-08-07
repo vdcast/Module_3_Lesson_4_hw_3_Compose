@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -40,6 +42,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 import com.example.module_3_lesson_4_hw_3_compose.R
@@ -161,6 +164,7 @@ fun HomeScreen(
                 )
                 if (showDropdownCountries) {
                     DropdownMenu(
+                        modifier = Modifier.heightIn(max = dimensionResource(id = R.dimen.button_width_2)),
                         expanded = true,
                         onDismissRequest = { showDropdownCountries = false },
                         properties = PopupProperties(focusable = false)
@@ -209,6 +213,7 @@ fun HomeScreen(
                 )
                 if (showDropdownLanguages) {
                     DropdownMenu(
+                        modifier = Modifier.heightIn(max = dimensionResource(id = R.dimen.button_width_2)),
                         expanded = true,
                         onDismissRequest = { showDropdownLanguages = false },
                         properties = PopupProperties(focusable = false)
