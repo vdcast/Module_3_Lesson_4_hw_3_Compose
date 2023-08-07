@@ -2,10 +2,10 @@ package com.example.module_3_lesson_4_hw_3_compose.ui
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.example.module_3_lesson_4_hw_3_compose.API
-import com.example.module_3_lesson_4_hw_3_compose.ResponseMain
-import com.example.module_3_lesson_4_hw_3_compose.Repositories
-import com.example.module_3_lesson_4_hw_3_compose.RetrofitClient
+import com.example.module_3_lesson_4_hw_3_compose.network.API
+import com.example.module_3_lesson_4_hw_3_compose.network.ResponseMain
+import com.example.module_3_lesson_4_hw_3_compose.network.Repositories
+import com.example.module_3_lesson_4_hw_3_compose.network.RetrofitClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

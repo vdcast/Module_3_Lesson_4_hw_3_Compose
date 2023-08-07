@@ -1,4 +1,4 @@
-package com.example.module_3_lesson_4_hw_3_compose.ui
+package com.example.module_3_lesson_4_hw_3_compose.ui.navigation
 
 sealed class ScreenRoutes(val route: String) {
     object ScreenMain : ScreenRoutes("screenMain")

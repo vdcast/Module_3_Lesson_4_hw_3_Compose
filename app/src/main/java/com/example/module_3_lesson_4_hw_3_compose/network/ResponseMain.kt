@@ -1,4 +1,4 @@
-package com.example.module_3_lesson_4_hw_3_compose
+package com.example.module_3_lesson_4_hw_3_compose.network
 
 import com.google.gson.annotations.SerializedName
 
