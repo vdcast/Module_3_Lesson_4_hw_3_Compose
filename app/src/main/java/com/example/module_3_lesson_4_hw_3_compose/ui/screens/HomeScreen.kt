@@ -62,12 +62,10 @@ fun HomeScreen(
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
 
-//    val countries = listOf("Ukraine", "Cyprus", "India", "United States")
     val countries = Countries.values().map { it.displayName }
     var filteredCountries by remember { mutableStateOf(listOf<String>()) }
     var showDropdownCountries by remember { mutableStateOf(false) }
 
-//    val languages = listOf("Kotlin", "Java", "JavaScript")
     val languages = ProgrammingLanguages.values().map { it.displayName }
     var filteredLanguages by remember { mutableStateOf(listOf<String>()) }
     var showDropdownLanguages by remember { mutableStateOf(false) }
@@ -231,8 +229,7 @@ fun HomeScreen(
             Button(
                 modifier = Modifier.fillMaxWidth(0.35f),
                 onClick = {
-
-                    if (usernameTextField.equals("") && countryTextField.equals("")) {
+                    if (usernameTextField == "" && countryTextField.text == "") {
                         Toast.makeText(
                             context,
                             R.string.toast_no_username_or_country,
@@ -242,15 +239,15 @@ fun HomeScreen(
                             show()
                         }
                     } else {
-                        if (!usernameTextField.equals("")) {
+                        if (usernameTextField != "") {
                             appViewModel.searchByUsername(
                                 query = usernameTextField,
                                 usernameTextField
                             )
                             onSearchClicked()
                         }
-                        if (!countryTextField.equals("")) {
-                            if (!languageTextField.equals("")) {
+                        if (countryTextField.text != "") {
+                            if (languageTextField.text != "") {
                                 val query = "location:${countryTextField.text} language:${languageTextField.text}"
                                 appViewModel.searchByCountryAndLanguage(
                                     query = query,
@@ -270,8 +267,6 @@ fun HomeScreen(
                             }
                         }
                     }
-
-
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Purple40,

@@ -84,7 +84,6 @@ fun ProfileOfUserScreen(
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold
                 )
-
                 Divider(
                     thickness = dimensionResource(id = R.dimen.thickness_divider),
                     modifier = Modifier
