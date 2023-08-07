@@ -14,4 +14,7 @@
     <string name="button_back">Back</string>
     <string name="open">Open</string>
     <string name="or">OR</string>
+    <string name="username">Username</string>
+    <string name="country">Country</string>
+    <string name="programming_lanuage">Programming language</string>
 </resources>

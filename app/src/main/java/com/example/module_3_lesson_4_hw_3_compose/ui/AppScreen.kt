@@ -1,6 +1,5 @@
 package com.example.module_3_lesson_4_hw_3_compose.ui
 
-import android.util.Log
 import android.view.Gravity
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -135,10 +134,12 @@ fun ScreenMain(
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .clickable { focusManager.clearFocus() }
+            .clickable { focusManager.clearFocus() },
+        verticalArrangement = Arrangement.SpaceBetween,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             modifier = Modifier
@@ -147,8 +148,7 @@ fun ScreenMain(
                     bottom = dimensionResource(id = R.dimen.padding_medium),
                     start = dimensionResource(id = R.dimen.padding_large),
                     end = dimensionResource(id = R.dimen.padding_large)
-                )
-                .align(Alignment.TopCenter),
+                ),
             text = stringResource(id = R.string.text_intro),
             textAlign = TextAlign.Center,
             fontSize = 16.sp,
@@ -158,8 +158,7 @@ fun ScreenMain(
         )
         Column(
             modifier = Modifier
-                .padding(bottom = dimensionResource(id = R.dimen.padding_large))
-                .align(Alignment.BottomCenter),
+                .padding(bottom = dimensionResource(id = R.dimen.padding_large)),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             OutlinedTextField(
@@ -171,7 +170,7 @@ fun ScreenMain(
                         languageTextField = ""
                     }
                 },
-                label = { Text("Username") },
+                label = { Text(stringResource(id = R.string.username)) },
                 textStyle = TextStyle(color = Color.White),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -202,7 +201,7 @@ fun ScreenMain(
                         usernameTextField = ""
                     }
                 },
-                label = { Text("Country") },
+                label = { Text(stringResource(id = R.string.country)) },
                 textStyle = TextStyle(color = Color.White),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -223,7 +222,7 @@ fun ScreenMain(
                         usernameTextField = ""
                     }
                 },
-                label = { Text("Language") },
+                label = { Text(stringResource(id = R.string.programming_lanuage)) },
                 textStyle = TextStyle(color = Color.White),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
